@@ -8,6 +8,7 @@ A command-line tool that extracts and analyzes keywords from web pages. This too
 - Retrieve page titles and meta tags
 - Calculate keyword relevance scores
 - Display top keywords ranked by importance
+- Support for both English and Japanese web pages with language-specific keyword extraction
 
 ## Installation
 

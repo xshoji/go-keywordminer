@@ -42,14 +42,14 @@ func NewAnalyzer(url string, timeoutSeconds int) (*Analyzer, error) {
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		return nil, fmt.Errorf("リクエストの作成に失敗しました: %w", err)
+		return nil, fmt.Errorf("Failed to create HTTP request for URL '%s': %w", url, err)
 	}
 
 	req.Header.Set("User-Agent", UserAgent)
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("URLにアクセスできませんでした: %w", err)
+		return nil, fmt.Errorf("Failed to access URL '%s': %w", url, err)
 	}
 	defer resp.Body.Close()
 
@@ -57,7 +57,7 @@ func NewAnalyzer(url string, timeoutSeconds int) (*Analyzer, error) {
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("レスポンスボディの読み込みに失敗しました: %w", err)
+		return nil, fmt.Errorf("Failed to read response body from URL '%s': %w", finalURL, err)
 	}
 
 	return &Analyzer{
@@ -74,7 +74,7 @@ func (a *Analyzer) parseDocument() (*goquery.Document, error) {
 
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(string(a.responseBody)))
 	if err != nil {
-		return nil, fmt.Errorf("HTMLドキュメントのパースに失敗しました: %w", err)
+		return nil, fmt.Errorf("Failed to parse HTML document for URL '%s': %w", a.URL, err)
 	}
 	a.document = doc
 	return doc, nil
@@ -109,7 +109,7 @@ func (a *Analyzer) FetchTitle() (string, error) {
 func (a *Analyzer) FetchDescription() (string, error) {
 	metaTags, err := a.FetchMetaTags()
 	if err != nil {
-		return "", fmt.Errorf("メタタグ取得エラー: %w", err)
+		return "", fmt.Errorf("Error retrieving meta tags from URL '%s': %w", a.URL, err)
 	}
 
 	description, hasDesc := metaTags["description"]
@@ -138,7 +138,7 @@ func (a *Analyzer) FetchDescription() (string, error) {
 func (a *Analyzer) FetchKeywords() ([]string, error) {
 	metaTags, err := a.FetchMetaTags()
 	if err != nil {
-		return nil, fmt.Errorf("メタタグ取得エラー: %w", err)
+		return nil, fmt.Errorf("Error retrieving meta tags from URL '%s': %w", a.URL, err)
 	}
 
 	keywords, hasKeywords := metaTags["keywords"]
@@ -184,7 +184,7 @@ func (a *Analyzer) FetchKeywords() ([]string, error) {
 func (a *Analyzer) FetchMetaTags() (map[string]string, error) {
 	doc, err := a.parseDocument()
 	if err != nil {
-		return nil, fmt.Errorf("goqueryでのパースに失敗しました: %w", err)
+		return nil, fmt.Errorf("Failed to parse document with goquery for URL '%s': %w", a.URL, err)
 	}
 	result := make(map[string]string)
 
@@ -332,17 +332,17 @@ func ExtractKeywords(text string) []string {
 func (a *Analyzer) CollectPageData() (*PageData, error) {
 	title, err := a.FetchTitle()
 	if err != nil {
-		return nil, fmt.Errorf("タイトル取得エラー: %w", err)
+		return nil, fmt.Errorf("Error retrieving page title from URL '%s': %w", a.URL, err)
 	}
 
 	meta, err := a.FetchMetaTags()
 	if err != nil {
-		return nil, fmt.Errorf("メタタグ取得エラー: %w", err)
+		return nil, fmt.Errorf("Error retrieving meta tags from URL '%s': %w", a.URL, err)
 	}
 
 	content, err := a.FetchMainContent()
 	if err != nil {
-		return nil, fmt.Errorf("コンテンツ取得エラー: %w", err)
+		return nil, fmt.Errorf("Error retrieving main content from URL '%s': %w", a.URL, err)
 	}
 
 	return &PageData{
@@ -370,7 +370,7 @@ func (a *Analyzer) GetTopKeywords(n int) ([]KeywordWithScore, error) {
 	// タイトルの処理
 	title, err := a.FetchTitle()
 	if err != nil {
-		return nil, fmt.Errorf("タイトル取得エラー: %w", err)
+		return nil, fmt.Errorf("Error retrieving page title from URL '%s': %w", a.URL, err)
 	}
 	if title != "" {
 		for _, k := range ExtractKeywords(title) {
@@ -385,7 +385,7 @@ func (a *Analyzer) GetTopKeywords(n int) ([]KeywordWithScore, error) {
 	// メタキーワードの処理
 	keywords, err := a.FetchKeywords()
 	if err != nil {
-		return nil, fmt.Errorf("キーワード取得エラー: %w", err)
+		return nil, fmt.Errorf("Error extracting keywords from URL '%s': %w", a.URL, err)
 	}
 	for _, k := range keywords {
 		// キーワードはそのままではなく、標準化する
@@ -401,7 +401,7 @@ func (a *Analyzer) GetTopKeywords(n int) ([]KeywordWithScore, error) {
 	// 説明文の処理
 	description, err := a.FetchDescription()
 	if err != nil {
-		return nil, fmt.Errorf("説明文取得エラー: %w", err)
+		return nil, fmt.Errorf("Error retrieving description from URL '%s': %w", a.URL, err)
 	}
 	if description != "" {
 		for _, k := range ExtractKeywords(description) {
@@ -416,7 +416,7 @@ func (a *Analyzer) GetTopKeywords(n int) ([]KeywordWithScore, error) {
 	// メインコンテンツの処理
 	mainContent, err := a.FetchMainContent()
 	if err != nil {
-		return nil, fmt.Errorf("コンテンツ取得エラー: %w", err)
+		return nil, fmt.Errorf("Error retrieving main content from URL '%s': %w", a.URL, err)
 	}
 	if mainContent != "" {
 		for _, k := range ExtractKeywords(mainContent) {

@@ -54,7 +54,7 @@ func main() {
 		fmt.Println("[Title]")
 		fmt.Println(title)
 	} else {
-		fmt.Println("[Title] なし")
+		fmt.Println("[Title] None")
 	}
 
 	// metaタグ抽出
@@ -66,7 +66,7 @@ func main() {
 			fmt.Printf("%s: %s\n", k, v)
 		}
 	} else {
-		fmt.Println("\n[Meta Tags] なし")
+		fmt.Println("\n[Meta Tags] None")
 	}
 
 	keywordsWithScores, kerr := analyzer.GetTopKeywords(20)
@@ -80,7 +80,7 @@ func main() {
 		}
 		fmt.Println()
 	} else {
-		fmt.Println("キーワードなし")
+		fmt.Println("No keywords found")
 	}
 
 }
