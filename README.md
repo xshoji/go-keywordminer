@@ -1,6 +1,6 @@
 # go-keywordminer
 
-A command-line tool that extracts and analyzes keywords from web pages. This tool helps you identify the most relevant keywords, retrieve page titles and meta tags, making it useful for SEO analysis and content optimization.
+A command-line tool that extracts and analyzes keywords from web pages. Additionally, this tool identifies keywords based on simple scoring and operates as a standalone application.
 
 ## Features
 
