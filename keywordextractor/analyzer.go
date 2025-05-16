@@ -269,22 +269,41 @@ func extractJapaneseKeywords(text string) []string {
 	for _, token := range tokens {
 		// 品詞情報を取得
 		features := token.Features()
-		if len(features) > 0 && (features[0] == "名詞") {
-			// 一般名詞、固有名詞、サ変接続名詞などを抽出
-			if len(features) > 1 && (features[1] == "一般" || features[1] == "固有名詞" ||
-				features[1] == "サ変接続" || features[1] == "形容動詞語幹") {
-				surface := token.Surface
-				if len(surface) > 1 { // 1文字の名詞は除外
-					// 小文字化した文字列をキーにする
-					normalized := strings.ToLower(surface)
-					keywordMap[normalized] = true
 
-					// 最初に出現した表記を保持（または長さが最も長い表記を保持）
-					if existing, ok := normalizedMap[normalized]; !ok || len(surface) > len(existing) {
-						normalizedMap[normalized] = surface
-					}
-				}
-			}
+		// 名詞でなければスキップ
+		if len(features) == 0 || features[0] != "名詞" {
+			continue
+		}
+
+		// 一般名詞、固有名詞、サ変接続名詞、形容動詞語幹のいずれでもなければスキップ
+		if len(features) <= 1 || !(features[1] == "一般" || features[1] == "固有名詞" ||
+			features[1] == "サ変接続" || features[1] == "形容動詞語幹") {
+			continue
+		}
+
+		surface := token.Surface
+
+		// 文字数を正確に数えるためにruneスライスに変換
+		runes := []rune(surface)
+		charLength := len(runes)
+
+		// 一文字の漢字以外（ひらがな、カタカナ、英数字、記号など）はスキップ
+		if charLength == 1 && !unicode.In(runes[0], unicode.Han) {
+			continue
+		}
+
+		// 記号や特殊文字だけの単語もスキップ
+		if isSymbolOrPunctuation(surface) {
+			continue
+		}
+
+		// ここまで来たものはキーワードとして採用
+		normalized := strings.ToLower(surface)
+		keywordMap[normalized] = true
+
+		// 最初に出現した表記を保持（または長さが最も長い表記を保持）
+		if existing, ok := normalizedMap[normalized]; !ok || len(surface) > len(existing) {
+			normalizedMap[normalized] = surface
 		}
 	}
 
@@ -318,7 +337,7 @@ func ExtractKeywords(text string) []string {
 	var result []string
 	for _, w := range words {
 		norm := normalizeKeyword(w)
-		if _, skip := stopWords[norm]; !skip && len(norm) > 1 && norm != "-" {
+		if _, skip := stopWords[norm]; !skip && len(norm) > 1 && norm != "-" && !isSymbolOrPunctuation(norm) {
 			if seen[norm] == 0 {
 				result = append(result, norm)
 				seen[norm] = 1
@@ -473,4 +492,31 @@ func (a *Analyzer) ExtractSiteKeywords() ([]string, error) {
 		result[i] = kw.Keyword
 	}
 	return result, nil
+}
+
+// isHiragana はテキストがひらがなのみで構成されているか判定します
+func isHiragana(text string) bool {
+	for _, r := range text {
+		if !unicode.In(r, unicode.Hiragana) {
+			return false
+		}
+	}
+	return len(text) > 0 // 空文字列の場合はfalseを返す
+}
+
+// isSymbolOrPunctuation はテキストが記号や特殊文字のみかどうかを判定します
+func isSymbolOrPunctuation(text string) bool {
+	if text == "" {
+		return false
+	}
+
+	// 全ての文字が記号か特殊文字かチェック
+	for _, r := range text {
+		// 英数字、ひらがな、カタカナ、漢字以外は記号や特殊文字と判定
+		if unicode.IsLetter(r) || unicode.IsDigit(r) ||
+			unicode.In(r, unicode.Hiragana, unicode.Katakana, unicode.Han) {
+			return false
+		}
+	}
+	return true
 }
