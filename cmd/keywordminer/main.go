@@ -68,7 +68,6 @@ func main() {
 		fmt.Println("\n[Meta Tags] None")
 	}
 
-	// ストップワード・正規化関数の明示的な取得をやめ、AnalyzerのGetTopKeywordsAutoを利用
 	keywordsWithScores, kerr := anlz.GetTopKeywordsAuto(20)
 	if kerr != nil {
 		handleError(kerr, "GetTopKeywordsAuto")
