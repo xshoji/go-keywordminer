@@ -1,6 +1,11 @@
 package analyzer
 
 import (
+	"net/http"
+	"strings"
+	"time"
+
+	"github.com/PuerkitoBio/goquery"
 	"github.com/xshoji/go-keywordminer/internal/fetcher"
 	"github.com/xshoji/go-keywordminer/internal/language"
 	"github.com/xshoji/go-keywordminer/internal/language/english"
@@ -146,4 +151,23 @@ func extractKeywords(text string, stopWords map[string]int, normalizeKeyword fun
 		return japanese.ExtractJapaneseKeywords(text)
 	}
 	return english.ExtractEnglishKeywords(text, stopWords, normalizeKeyword)
+}
+
+// ページ取得の分離
+func FetchPage(url string, timeout time.Duration) (*http.Response, error) {
+	client := &http.Client{Timeout: timeout}
+	return client.Get(url)
+}
+
+// 文書解析の分離
+func ParseDocument(body []byte) (*goquery.Document, error) {
+	return goquery.NewDocumentFromReader(strings.NewReader(string(body)))
+}
+
+// キーワード抽出の分離
+func ExtractKeywords(content string, isJapanese bool, stopWords map[string]int, normalizeKeyword func(string) string) ([]string, error) {
+	if isJapanese || language.ContainsJapanese(content) {
+		return japanese.ExtractJapaneseKeywords(content), nil
+	}
+	return english.ExtractEnglishKeywords(content, stopWords, normalizeKeyword), nil
 }
