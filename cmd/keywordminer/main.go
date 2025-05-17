@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/xshoji/go-keywordminer/keywordextractor"
+	"github.com/xshoji/go-keywordminer/pkg/analyzer"
 )
 
 const (
@@ -34,21 +34,19 @@ func init() {
 // Build:
 // $ GOOS=darwin GOARCH=amd64 go build -ldflags="-s -w" -trimpath ./cmd/keywordminer
 func main() {
-
 	flag.Parse()
 	if *optionUrl == "" {
 		flag.Usage()
 		os.Exit(0)
 	}
 
-	analyzer, err := keywordextractor.NewAnalyzer(*optionUrl, 10)
+	anlz, err := analyzer.NewAnalyzer(*optionUrl, 10)
 	if err != nil {
 		handleError(err, "NewAnalyzer")
 		os.Exit(1)
 	}
 
-	// titleタグ抽出
-	title, err := analyzer.FetchTitle()
+	title, err := anlz.FetchTitle()
 	handleError(err, "FetchTitle")
 	if err == nil && title != "" {
 		fmt.Println("[Title]")
@@ -57,8 +55,7 @@ func main() {
 		fmt.Println("[Title] None")
 	}
 
-	// metaタグ抽出
-	meta, err := analyzer.FetchMetaTags()
+	meta, err := anlz.FetchMetaTags()
 	handleError(err, "FetchMetaTags(meta)")
 	if err == nil && len(meta) > 0 {
 		fmt.Println("\n[Meta Tags]")
@@ -69,7 +66,11 @@ func main() {
 		fmt.Println("\n[Meta Tags] None")
 	}
 
-	keywordsWithScores, kerr := analyzer.GetTopKeywords(20)
+	// ストップワード・正規化関数は utils/types からも利用可能
+	stopWords := map[string]int{"the": 0, "is": 0}  // 必要に応じて拡張
+	normalize := func(s string) string { return s } // 必要に応じて拡張
+
+	keywordsWithScores, kerr := anlz.GetTopKeywords(20, stopWords, normalize)
 	if kerr != nil {
 		handleError(kerr, "GetTopKeywords")
 	}
@@ -82,7 +83,6 @@ func main() {
 	} else {
 		fmt.Println("No keywords found")
 	}
-
 }
 
 // =======================================
