@@ -62,6 +62,23 @@ When using this tool, please be aware of the following:
 - Do not use this tool to extract personal information or copyrighted content
 - Be considerate of the website's server load by limiting request frequency
 
+## Release
+
+The release flow for this repository is automated with GitHub Actions.
+Pushing Git tags triggers the release job.
+
+```
+# Release
+git tag v0.0.2 && git push --tags
+
+
+# Delete tag
+echo "v0.0.1" |xargs -I{} bash -c "git tag -d {} && git push origin :{}"
+
+# Delete tag and recreate new tag and push
+echo "v0.0.2" |xargs -I{} bash -c "git tag -d {} && git push origin :{}; git tag {} -m \"Release beta version.\"; git push --tags"
+```
+
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
