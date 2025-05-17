@@ -228,3 +228,15 @@ func (a *Analyzer) GetTopKeywordsWithDefaultConfig(n int) ([]scoring.KeywordWith
 	mainContent, _ := a.FetchMainContent()
 	return ExtractKeywordsWithFrequency(mainContent, stopWords, normalize), nil
 }
+
+// stopWords, normalizeKeyword をConfigから自動で利用するバージョン
+func (a *Analyzer) GetTopKeywordsAuto(n int) ([]scoring.KeywordWithScore, error) {
+	cfg := a.Config
+	stopWords := cfg.EnglishStopWords
+	pluralSingularMap := cfg.PluralSingularMap
+	invariantWords := cfg.InvariantWords
+	normalize := func(word string) string {
+		return english.NormalizeEnglishKeyword(word, pluralSingularMap, invariantWords)
+	}
+	return a.GetTopKeywords(n, stopWords, normalize)
+}

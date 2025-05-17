@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/xshoji/go-keywordminer/config"
-	"github.com/xshoji/go-keywordminer/internal/language/english"
 	"github.com/xshoji/go-keywordminer/pkg/analyzer"
 )
 
@@ -69,17 +68,10 @@ func main() {
 		fmt.Println("\n[Meta Tags] None")
 	}
 
-	// ストップワード・正規化関数はConfigから取得
-	stopWords := cfg.EnglishStopWords
-	pluralSingularMap := cfg.PluralSingularMap
-	invariantWords := cfg.InvariantWords
-	normalize := func(word string) string {
-		return english.NormalizeEnglishKeyword(word, pluralSingularMap, invariantWords)
-	}
-
-	keywordsWithScores, kerr := anlz.GetTopKeywords(20, stopWords, normalize)
+	// ストップワード・正規化関数の明示的な取得をやめ、AnalyzerのGetTopKeywordsAutoを利用
+	keywordsWithScores, kerr := anlz.GetTopKeywordsAuto(20)
 	if kerr != nil {
-		handleError(kerr, "GetTopKeywords")
+		handleError(kerr, "GetTopKeywordsAuto")
 	}
 	fmt.Printf("\n[Top Keywords]\n")
 	if len(keywordsWithScores) > 0 {
