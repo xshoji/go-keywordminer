@@ -96,12 +96,14 @@ func (a *Analyzer) CollectPageData() (*PageData, error) {
 }
 
 func (a *Analyzer) GetTopKeywords(n int, stopWords map[string]int, normalizeKeyword func(string) string) ([]scoring.KeywordWithScore, error) {
-	const (
-		weightMetaKeyword = 8
-		weightTitle       = 5
-		weightDesc        = 3
-		weightMain        = 1
-	)
+	cfg := a.Config
+	weightMetaKeyword := cfg.ScoreWeights.MetaKeyword
+	weightTitle := cfg.ScoreWeights.Title
+	weightDesc := cfg.ScoreWeights.Description
+	weightMain := cfg.ScoreWeights.MainContent
+	if n <= 0 {
+		n = cfg.MaxKeywords
+	}
 	scoreMap := map[string]int{}
 	originalMap := map[string]string{}
 
