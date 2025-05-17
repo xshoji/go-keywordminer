@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/xshoji/go-keywordminer/config"
 	"github.com/xshoji/go-keywordminer/pkg/analyzer"
 )
 
@@ -40,7 +41,8 @@ func main() {
 		os.Exit(0)
 	}
 
-	anlz, err := analyzer.NewAnalyzer(*optionUrl, 10)
+	cfg := config.DefaultConfig()
+	anlz, err := analyzer.NewAnalyzer(*optionUrl, cfg)
 	if err != nil {
 		handleError(err, "NewAnalyzer")
 		os.Exit(1)

@@ -3,7 +3,7 @@ package analyzer
 import (
 	"testing"
 
-	"github.com/xshoji/go-keywordminer/internal/parser"
+	"github.com/xshoji/go-keywordminer/config"
 )
 
 type dummyNormalizer struct{}
@@ -12,7 +12,7 @@ func (d dummyNormalizer) NormalizeKeyword(word string) string { return word }
 
 func TestAnalyzer_FetchTitleAndMeta(t *testing.T) {
 	html := `<html><head><title>TestTitle</title><meta name="description" content="desc"><meta name="keywords" content="go, test"></head><body><h1>見出し</h1></body></html>`
-	doc, err := NewAnalyzerFromHTML(html)
+	doc, err := NewAnalyzerFromHTML(html, config.DefaultConfig())
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -31,7 +31,7 @@ func TestAnalyzer_FetchTitleAndMeta(t *testing.T) {
 
 func TestAnalyzer_GetTopKeywords_English(t *testing.T) {
 	html := `<html><head><title>Go Test</title><meta name="keywords" content="go, test, code"></head><body><h1>Go Test</h1></body></html>`
-	doc, err := NewAnalyzerFromHTML(html)
+	doc, err := NewAnalyzerFromHTML(html, config.DefaultConfig())
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -47,7 +47,7 @@ func TestAnalyzer_GetTopKeywords_English(t *testing.T) {
 
 func TestAnalyzer_GetTopKeywords_Japanese(t *testing.T) {
 	html := `<html><head><title>日本語 テスト</title></head><body><h1>日本語 テスト</h1></body></html>`
-	doc, err := NewAnalyzerFromHTML(html)
+	doc, err := NewAnalyzerFromHTML(html, config.DefaultConfig())
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -58,17 +58,4 @@ func TestAnalyzer_GetTopKeywords_Japanese(t *testing.T) {
 	if len(keywords) == 0 {
 		t.Error("expected keywords, got none")
 	}
-}
-
-// テスト用: HTML文字列からAnalyzerを生成
-func NewAnalyzerFromHTML(html string) (*Analyzer, error) {
-	doc, err := parser.ParseHTMLDocument(html)
-	if err != nil {
-		return nil, err
-	}
-	return &Analyzer{
-		URL:          "dummy",
-		responseBody: []byte(html),
-		doc:          doc,
-	}, nil
 }

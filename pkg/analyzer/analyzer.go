@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/xshoji/go-keywordminer/config"
 	"github.com/xshoji/go-keywordminer/internal/fetcher"
 	"github.com/xshoji/go-keywordminer/internal/language"
 	"github.com/xshoji/go-keywordminer/internal/language/english"
@@ -24,10 +25,11 @@ type Analyzer struct {
 	URL          string
 	responseBody []byte
 	doc          *parser.HTMLDocument
+	Config       config.Config
 }
 
-func NewAnalyzer(url string, timeoutSeconds int) (*Analyzer, error) {
-	res, err := fetcher.FetchURL(url, timeoutSeconds)
+func NewAnalyzer(url string, cfg config.Config) (*Analyzer, error) {
+	res, err := fetcher.FetchURL(url, int(cfg.Timeout.Seconds()))
 	if err != nil {
 		return nil, err
 	}
@@ -39,6 +41,21 @@ func NewAnalyzer(url string, timeoutSeconds int) (*Analyzer, error) {
 		URL:          res.URL,
 		responseBody: res.Body,
 		doc:          doc,
+		Config:       cfg,
+	}, nil
+}
+
+// テスト用: HTML文字列からAnalyzerを生成
+func NewAnalyzerFromHTML(html string, cfg config.Config) (*Analyzer, error) {
+	doc, err := parser.ParseHTMLDocument(html)
+	if err != nil {
+		return nil, err
+	}
+	return &Analyzer{
+		URL:          "dummy",
+		responseBody: []byte(html),
+		doc:          doc,
+		Config:       cfg,
 	}, nil
 }
 
