@@ -176,3 +176,55 @@ func ExtractKeywords(content string, isJapanese bool, stopWords map[string]int, 
 	}
 	return english.ExtractEnglishKeywords(content, stopWords, normalizeKeyword), nil
 }
+
+// ExtractKeywordsWithFrequency テキストからキーワードとその頻度を抽出します
+func ExtractKeywordsWithFrequency(text string, stopWords map[string]int, normalizeKeyword func(string) string) []scoring.KeywordWithScore {
+	words := strings.Fields(strings.ToLower(text))
+	wordFreq := map[string]int{}
+	normalizedWords := map[string][]string{}
+	normalizedScores := map[string]int{}
+	for _, w := range words {
+		if _, skip := stopWords[w]; skip || len(w) <= 1 || w == "-" {
+			continue
+		}
+		norm := normalizeKeyword(w)
+		if _, skip := stopWords[norm]; !skip && len(norm) > 1 && norm != "-" {
+			wordFreq[w]++
+			if norm != w {
+				normalizedWords[norm] = append(normalizedWords[norm], w)
+			}
+			normalizedScores[norm]++
+		}
+	}
+	var result []scoring.KeywordWithScore
+	for norm, score := range normalizedScores {
+		bestWord := norm
+		bestScore := 0
+		if originals, exists := normalizedWords[norm]; exists && len(originals) > 0 {
+			for _, original := range originals {
+				if wordFreq[original] > bestScore {
+					bestWord = original
+					bestScore = wordFreq[original]
+				}
+			}
+		}
+		result = append(result, scoring.KeywordWithScore{
+			Keyword: bestWord,
+			Score:   score,
+		})
+	}
+	return result
+}
+
+// AnalyzerのメソッドとしてConfigのストップワード・正規化辞書を使う例
+func (a *Analyzer) GetTopKeywordsWithDefaultConfig(n int) ([]scoring.KeywordWithScore, error) {
+	cfg := a.Config
+	stopWords := cfg.EnglishStopWords
+	pluralSingularMap := cfg.PluralSingularMap
+	invariantWords := cfg.InvariantWords
+	normalize := func(word string) string {
+		return english.NormalizeEnglishKeyword(word, pluralSingularMap, invariantWords)
+	}
+	mainContent, _ := a.FetchMainContent()
+	return ExtractKeywordsWithFrequency(mainContent, stopWords, normalize), nil
+}
