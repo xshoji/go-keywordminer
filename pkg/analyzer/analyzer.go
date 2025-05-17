@@ -45,20 +45,6 @@ func NewAnalyzer(url string, cfg config.Config) (*Analyzer, error) {
 	}, nil
 }
 
-// テスト用: HTML文字列からAnalyzerを生成
-func NewAnalyzerFromHTML(html string, cfg config.Config) (*Analyzer, error) {
-	doc, err := parser.ParseHTMLDocument(html)
-	if err != nil {
-		return nil, err
-	}
-	return &Analyzer{
-		URL:          "dummy",
-		responseBody: []byte(html),
-		doc:          doc,
-		Config:       cfg,
-	}, nil
-}
-
 func (a *Analyzer) FetchTitle() (string, error) {
 	titles := a.doc.FetchTags("title")
 	if len(titles) == 0 {
