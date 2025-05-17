@@ -1,5 +1,7 @@
 # go-keywordminer
 
+> **Note**: This repository contains code that was largely generated with the assistance of GitHub Copilot (Claude 3.7 Sonnet and GPT-4.1).
+
 A command-line tool that extracts and analyzes keywords from web pages. Additionally, this tool identifies keywords based on simple scoring and operates as a standalone application.
 
 ## Features
