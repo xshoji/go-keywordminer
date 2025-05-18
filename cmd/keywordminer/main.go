@@ -27,6 +27,7 @@ var (
 	commandDescription     = "A tool for extracting and analyzing keywords from web pages. \n  Fetches titles, meta tags, and identifies top keywords with their relevance scores."
 	commandOptionMaxLength = 0
 	optionUrl              = defineFlagValue("u", "url" /*    */, UsageRequiredPrefix+"URL" /*   */, "").(*string)
+	optionPretty           = defineFlagValue("p", "pretty" /* */, "Format JSON output with indentation", false).(*bool)
 )
 
 func init() {
@@ -57,7 +58,16 @@ func main() {
 	}
 
 	// JSON形式で出力
-	jsonData, err := json.MarshalIndent(result, "", "  ")
+	var jsonData []byte
+
+	if *optionPretty {
+		// インデント付きのJSON出力（pretty形式）
+		jsonData, err = json.MarshalIndent(result, "", "  ")
+	} else {
+		// 1行のJSON出力
+		jsonData, err = json.Marshal(result)
+	}
+
 	if err != nil {
 		handleError(err, "JSON Marshal")
 		os.Exit(1)
