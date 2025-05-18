@@ -40,20 +40,72 @@ or using the long option format:
 keywordminer --url https://example.com
 ```
 
+### Available Options
+
+- `-u, --url` (Required): The URL to analyze
+- `-p, --pretty`: Format JSON output with indentation
+- `-d, --detail`: Output all details including title and meta tags (By default, only keywords are displayed)
+
 ### Example output
 
+By default, the tool outputs keywords in JSON format:
+
+```json
+{"keywords":[{"keyword":"example","score":15},{"keyword":"domain","score":12},{"keyword":"website","score":8}]}
 ```
-[ Command options ]
-  -u, --url http://example.com       URL
 
-[Title]
-Example Domain
+With the pretty option:
 
-[Meta Tags]
-description: This is an example website
+```
+keywordminer -u https://example.com -p
+```
 
-[Top Keywords]
-example (score: 15), domain (score: 12), website (score: 8), ...
+```json
+{
+  "keywords": [
+    {
+      "keyword": "example",
+      "score": 15
+    },
+    {
+      "keyword": "domain",
+      "score": 12
+    },
+    {
+      "keyword": "website",
+      "score": 8
+    }
+  ]
+}
+```
+
+With the detail option:
+
+```
+keywordminer -u https://example.com -p -d
+```
+
+```json
+{
+  "title": "Example Domain",
+  "meta_tags": {
+    "description": "This is an example website"
+  },
+  "keywords": [
+    {
+      "keyword": "example",
+      "score": 15
+    },
+    {
+      "keyword": "domain",
+      "score": 12
+    },
+    {
+      "keyword": "website",
+      "score": 8
+    }
+  ]
+}
 ```
 
 ## Important Considerations
