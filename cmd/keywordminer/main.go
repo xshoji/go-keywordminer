@@ -14,6 +14,7 @@ import (
 
 	"github.com/xshoji/go-keywordminer/config"
 	"github.com/xshoji/go-keywordminer/pkg/analyzer"
+	"github.com/xshoji/go-keywordminer/pkg/types"
 )
 
 const (
@@ -22,12 +23,18 @@ const (
 	TimeFormat          = "2006-01-02 15:04:05.0000 [MST]"
 )
 
+// KeywordsOnly はキーワードのみを含む出力構造体
+type KeywordsOnly struct {
+	Keywords []types.KeywordWithScore `json:"keywords"`
+}
+
 var (
 	// Command options ( the -h, --help option is defined by default in the flag package )
 	commandDescription     = "A tool for extracting and analyzing keywords from web pages. \n  Fetches titles, meta tags, and identifies top keywords with their relevance scores."
 	commandOptionMaxLength = 0
 	optionUrl              = defineFlagValue("u", "url" /*    */, UsageRequiredPrefix+"URL" /*   */, "").(*string)
 	optionPretty           = defineFlagValue("p", "pretty" /* */, "Format JSON output with indentation", false).(*bool)
+	optionDetail           = defineFlagValue("d", "detail" /* */, "Output all details including title and meta tags", false).(*bool)
 )
 
 func init() {
@@ -49,7 +56,6 @@ func main() {
 		handleError(err, "NewAnalyzer")
 		os.Exit(1)
 	}
-
 	// 解析結果を取得
 	result, err := anlz.GetAnalysisResult(20)
 	if err != nil {
@@ -59,13 +65,25 @@ func main() {
 
 	// JSON形式で出力
 	var jsonData []byte
+	var outputObj interface{}
+
+	// 詳細表示フラグに応じて出力形式を切り替え
+	if *optionDetail {
+		// 詳細表示：全てのフィールドを出力
+		outputObj = result
+	} else {
+		// デフォルト：keywordsのみを出力
+		outputObj = KeywordsOnly{
+			Keywords: result.Keywords,
+		}
+	}
 
 	if *optionPretty {
 		// インデント付きのJSON出力（pretty形式）
-		jsonData, err = json.MarshalIndent(result, "", "  ")
+		jsonData, err = json.MarshalIndent(outputObj, "", "  ")
 	} else {
 		// 1行のJSON出力
-		jsonData, err = json.Marshal(result)
+		jsonData, err = json.Marshal(outputObj)
 	}
 
 	if err != nil {
