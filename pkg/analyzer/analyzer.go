@@ -6,13 +6,13 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/xshoji/go-keywordminer/config"
 	"github.com/xshoji/go-keywordminer/internal/fetcher"
 	"github.com/xshoji/go-keywordminer/internal/language"
 	"github.com/xshoji/go-keywordminer/internal/language/english"
 	"github.com/xshoji/go-keywordminer/internal/language/japanese"
 	"github.com/xshoji/go-keywordminer/internal/parser"
 	"github.com/xshoji/go-keywordminer/internal/scoring"
+	"github.com/xshoji/go-keywordminer/pkg/config"
 	"github.com/xshoji/go-keywordminer/pkg/types"
 )
 

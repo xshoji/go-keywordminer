@@ -12,8 +12,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/xshoji/go-keywordminer/config"
 	"github.com/xshoji/go-keywordminer/pkg/analyzer"
+	"github.com/xshoji/go-keywordminer/pkg/config"
 )
 
 const (
