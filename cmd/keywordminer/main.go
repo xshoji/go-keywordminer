@@ -14,7 +14,6 @@ import (
 
 	"github.com/xshoji/go-keywordminer/config"
 	"github.com/xshoji/go-keywordminer/pkg/analyzer"
-	"github.com/xshoji/go-keywordminer/pkg/types"
 )
 
 const (
@@ -22,11 +21,6 @@ const (
 	UsageDummy          = "########"
 	TimeFormat          = "2006-01-02 15:04:05.0000 [MST]"
 )
-
-// KeywordsOnly はキーワードのみを含む出力構造体
-type KeywordsOnly struct {
-	Keywords []types.KeywordWithScore `json:"keywords"`
-}
 
 var (
 	// Command options ( the -h, --help option is defined by default in the flag package )
@@ -72,8 +66,10 @@ func main() {
 		// 詳細表示：全てのフィールドを出力
 		outputObj = result
 	} else {
-		// デフォルト：keywordsのみを出力
-		outputObj = KeywordsOnly{
+		// デフォルト：keywordsのみを出力（匿名構造体を使用）
+		outputObj = struct {
+			Keywords interface{} `json:"keywords"`
+		}{
 			Keywords: result.Keywords,
 		}
 	}
