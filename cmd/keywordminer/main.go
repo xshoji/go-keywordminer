@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
@@ -48,39 +49,20 @@ func main() {
 		os.Exit(1)
 	}
 
-	title, err := anlz.FetchTitle()
-	handleError(err, "FetchTitle")
-	if err == nil && title != "" {
-		fmt.Println("[Title]")
-		fmt.Println(title)
-	} else {
-		fmt.Println("[Title] None")
+	// 解析結果を取得
+	result, err := anlz.GetAnalysisResult(20)
+	if err != nil {
+		handleError(err, "GetAnalysisResult")
+		os.Exit(1)
 	}
 
-	meta, err := anlz.FetchMetaTags()
-	handleError(err, "FetchMetaTags(meta)")
-	if err == nil && len(meta) > 0 {
-		fmt.Println("\n[Meta Tags]")
-		for k, v := range meta {
-			fmt.Printf("%s: %s\n", k, v)
-		}
-	} else {
-		fmt.Println("\n[Meta Tags] None")
+	// JSON形式で出力
+	jsonData, err := json.MarshalIndent(result, "", "  ")
+	if err != nil {
+		handleError(err, "JSON Marshal")
+		os.Exit(1)
 	}
-
-	keywordsWithScores, kerr := anlz.GetTopKeywordsAuto(20)
-	if kerr != nil {
-		handleError(kerr, "GetTopKeywordsAuto")
-	}
-	fmt.Printf("\n[Top Keywords]\n")
-	if len(keywordsWithScores) > 0 {
-		for _, kws := range keywordsWithScores {
-			fmt.Printf("%s (score: %d), ", kws.Keyword, kws.Score)
-		}
-		fmt.Println()
-	} else {
-		fmt.Println("No keywords found")
-	}
+	fmt.Println(string(jsonData))
 }
 
 // =======================================
@@ -92,6 +74,8 @@ func handleError(err error, prefixErrMessage string) {
 		fmt.Printf("%s [ERROR %s]: %v\n", time.Now().Format(TimeFormat), prefixErrMessage, err)
 	}
 }
+
+// convertKeywords 関数は不要になったため削除
 
 // Helper function for flag
 func defineFlagValue(short, long, description string, defaultValue any) (f any) {

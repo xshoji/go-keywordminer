@@ -13,6 +13,7 @@ import (
 	"github.com/xshoji/go-keywordminer/internal/language/japanese"
 	"github.com/xshoji/go-keywordminer/internal/parser"
 	"github.com/xshoji/go-keywordminer/internal/scoring"
+	"github.com/xshoji/go-keywordminer/pkg/types"
 )
 
 type PageData struct {
@@ -239,4 +240,58 @@ func (a *Analyzer) GetTopKeywordsAuto(n int) ([]scoring.KeywordWithScore, error)
 		return english.NormalizeEnglishKeyword(word, pluralSingularMap, invariantWords)
 	}
 	return a.GetTopKeywords(n, stopWords, normalize)
+}
+
+// GetAnalysisResult はウェブページの解析結果を返します
+func (a *Analyzer) GetAnalysisResult(maxKeywords int) (*types.AnalysisResult, error) {
+	result := &types.AnalysisResult{}
+	var lastErr error
+
+	// タイトルを取得
+	title, err := a.FetchTitle()
+	if err != nil {
+		lastErr = err
+	} else if title != "" {
+		result.Title = title
+	}
+
+	// メタタグを取得
+	meta, err := a.FetchMetaTags()
+	if err != nil {
+		lastErr = err
+	} else if len(meta) > 0 {
+		result.MetaTags = meta
+	}
+
+	// キーワードを取得
+	keywordsWithScores, err := a.GetTopKeywordsAuto(maxKeywords)
+	if err != nil {
+		lastErr = err
+	} else if len(keywordsWithScores) > 0 {
+		result.Keywords = convertToTypeKeywords(keywordsWithScores)
+	}
+
+	// 何かしらのデータが取得できていれば結果を返す
+	if result.Title != "" || len(result.MetaTags) > 0 || len(result.Keywords) > 0 {
+		return result, lastErr
+	}
+
+	// 何もデータが取得できなかった場合はエラーを返す
+	if lastErr != nil {
+		return nil, lastErr
+	}
+
+	return result, nil
+}
+
+// convertToTypeKeywords は scoring.KeywordWithScore を types.KeywordWithScore に変換します
+func convertToTypeKeywords(input []scoring.KeywordWithScore) []types.KeywordWithScore {
+	var result []types.KeywordWithScore
+	for _, kws := range input {
+		result = append(result, types.KeywordWithScore{
+			Keyword: kws.Keyword,
+			Score:   kws.Score,
+		})
+	}
+	return result
 }

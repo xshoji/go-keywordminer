@@ -15,8 +15,15 @@ type PageData struct {
 
 // KeywordWithScore はキーワードとスコアの構造体
 type KeywordWithScore struct {
-	Keyword string
-	Score   int
+	Keyword string `json:"keyword"`
+	Score   int    `json:"score"`
+}
+
+// AnalysisResult はウェブページの解析結果を表す構造体
+type AnalysisResult struct {
+	Title    string             `json:"title,omitempty"`
+	MetaTags map[string]string  `json:"meta_tags,omitempty"`
+	Keywords []KeywordWithScore `json:"keywords,omitempty"`
 }
 
 // PageFetcher: ページ取得のインターフェース
